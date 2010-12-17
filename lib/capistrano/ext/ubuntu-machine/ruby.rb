@@ -49,7 +49,11 @@ namespace :ruby do
   
   desc "Install Phusion Passenger"
   task :install_passenger, :roles => :app do
-    # rake 0.8.5 needs latest version of rdoc
+    # sudo apt-get install libcurl4-openssl-dev
+	sudo "apt-get install libcurl4-openssl-dev -y"
+
+
+	# rake 0.8.5 needs latest version of rdoc
     sudo "gem install rdoc"
     
     # because  passenger-install-apache2-module do not find the rake installed by REE
