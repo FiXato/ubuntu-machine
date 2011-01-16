@@ -6,6 +6,9 @@ end
 #   Capistrano::Configuration.instance.load {load(lib)}   
 # }
 
+
+SUPPORTED_DISTRIBUTIONS = ["jaunty", "hardy", "maverick"]
+
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/apache.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/aptitude.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/extras.rb")}

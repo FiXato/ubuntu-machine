@@ -86,12 +86,26 @@ namespace :aptitude do
     http://articles.slicehost.com/2007/11/6/ubuntu-gutsy-setup-page-2
   DESC
   task :setup, :roles => :app do
-    put render("sources.lucid", binding), "sources.list"
+    distribution = nil
+    run "cat /etc/lsb-release" do |ch, stream, data|
+      distribution = data.scan(/DISTRIB_CODENAME=(\w*)/)[0][0]
+      
+      unless SUPPORTED_DISTRIBUTIONS.include?(distribution)
+        puts "Your distribution (#{distribution}) is not supported by Ubuntu-Machine at this time."
+        exit
+      end
+    end
+    
+    put render("sources.#{distribution}", binding), "sources.list"
     sudo "mv sources.list /etc/apt/sources.list"
     sudo "apt-get update"
     update
-    sudo "locale-gen en_GB.UTF-8"
-    sudo "/usr/sbin/update-locale LANG=en_GB.UTF-8"
+    
+    locale = Capistrano::CLI.ui.ask("Which locale should we use (en_US/en_GB/fr_FR etc)? ")
+    
+    sudo "locale-gen #{locale}.UTF-8"
+    sudo "/usr/sbin/update-locale LANG=#{locale}.UTF-8"
+    
     safe_upgrade
     full_upgrade
     sudo "apt-get install -y build-essential"

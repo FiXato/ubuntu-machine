@@ -37,13 +37,20 @@ namespace :utils do
     sudo_and_watch_prompt("/opt/ruby-enterprise/bin/passenger-make-enterprisey", [/Key\:/,  /again\:/])    
   end
   
-  
   desc "Copy sources list"
-  task :copy_sources, :roles => :gateway do
-    put render("sources.lucid", binding), "sources.list"
-     sudo "mv sources.list /etc/apt/sources.list"
-     sudo "apt-get update"
+  task :copy_sources, :roles => :gateway do 
+    distribution = nil       
+    run "cat /etc/lsb-release" do |ch, stream, data|
+      distribution = data.scan(/^DISTRIB_CODENAME=(\w*)$/)[0][0]
+      
+      unless SUPPORTED_DISTRIBUTIONS.include?(distribution)
+        puts "Your distribution is not supported by Ubuntu-Machine at this time. (#{distribution})"
+        exit
+      end
+    end
+
+    put render("sources.#{distribution}", binding), "sources.list"
+    sudo "mv sources.list /etc/apt/sources.list"
+    sudo "apt-get update"
   end
-  
-  
 end

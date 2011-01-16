@@ -1,13 +1,13 @@
 Gem::Specification.new do |s|
   s.name     = "ubuntu-machine"
-  s.version  = "0.5.3.2.24"
-  s.date     = "2010-12-17"
+  s.version  = "0.5.3.2.25"
+  s.date     = "2011-01-16"
   s.summary  = "Capistrano recipes for setting up and deploying to a Ubuntu Machine. Fork of SuitMyMind's ubuntu-machine"
   s.email    = "fixato@gmail.com"
   s.homepage = "https://github.com/rachid/ubuntu-machine"
   s.description = "Capistrano recipes for setting up and deploying to a Ubuntu Machine"
   s.has_rdoc = false
-  s.authors  = ["Thomas Balthazar","Tarik Alkasab","Filip H.F. 'FiXato' Slagter", "Wes Oldenbeuving","Rachid Al Maach"]
+  s.authors  = ["Thomas Balthazar","Tarik Alkasab","Filip H.F. 'FiXato' Slagter", "Wes Oldenbeuving","Rachid Al Maach","Tom Milewski"]
   # s.files    = Dir["README", "MIT-LICENSE", "lib/capistrano/ext/**/*"]
   s.files    = ["README", 
                 "MIT-LICENSE", 
@@ -51,7 +51,8 @@ Gem::Specification.new do |s|
                 "lib/capistrano/ext/ubuntu-machine/templates/vsftpd.conf.erb",
                 "lib/capistrano/ext/ubuntu-machine/templates/xsendfile.load.erb",
                 "lib/capistrano/ext/ubuntu-machine/templates/sources.jaunty.erb",
-                "lib/capistrano/ext/ubuntu-machine/templates/sources.lucid.erb"
+                "lib/capistrano/ext/ubuntu-machine/templates/sources.lucid.erb",
+                "lib/capistrano/ext/ubuntu-machine/templates/sources.maverick.erb"
                 
                 ]
   
