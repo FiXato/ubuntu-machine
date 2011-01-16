@@ -9,7 +9,8 @@ namespace :gems do
     sudo "ln -s /usr/bin/gem1.8 /usr/bin/gem"
     sudo "gem update"
     sudo "gem update --system"
-    run "rm -Rf rubygems-#{rubygem_version}*"
+    sudo "gem install bundler"
+    run "rm -Rf rubygems-#{rubygem_version}*"  
   end
   
   desc "List gems on remote server"
