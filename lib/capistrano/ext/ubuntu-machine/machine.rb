@@ -33,6 +33,7 @@ namespace :machine do
     ruby.install
     postfix.install
     gems.install_rubygems
+    gems.install_bundler
     ruby.install_enterprise
     ruby.install_passenger
     git.install
