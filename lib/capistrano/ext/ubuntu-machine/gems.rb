@@ -1,6 +1,8 @@
 namespace :gems do
   desc "Install RubyGems"
   task :install_rubygems, :roles => :app do
+    rubygem_version ||= "1.4.1"
+    
     sudo "apt-get install wget"
     
     run "wget http://production.cf.rubygems.org/rubygems/rubygems-#{rubygem_version}.tgz"

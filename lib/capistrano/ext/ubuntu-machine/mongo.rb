@@ -1,7 +1,8 @@
 namespace :mongo do
   desc "Install Mongo"
   task :install, :roles => :db do  
-    file = "mongodb-linux-x86_64-#{mongo_version}"
+    mongo_version ||= "1.6.5"
+    file            = "mongodb-linux-x86_64-#{mongo_version}"
 
     run "wget http://fastdl.mongodb.org/linux/#{file}.tgz && tar xzf #{file}.tgz"
     run "rm #{file}.tgz"
