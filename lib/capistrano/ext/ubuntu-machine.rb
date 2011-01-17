@@ -21,6 +21,7 @@ Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/lmsensors.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/machine.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/mysql.rb")}
+Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/mongo.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/network.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/ntp.rb")}
 Capistrano::Configuration.instance.load {load("#{File.dirname(__FILE__)}/ubuntu-machine/php.rb")}
