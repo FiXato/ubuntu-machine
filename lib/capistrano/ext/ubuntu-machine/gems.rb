@@ -1,15 +1,22 @@
 namespace :gems do
   desc "Install RubyGems"
   task :install_rubygems, :roles => :app do
-    rubygems_location = 'http://rubyforge.org' + `curl -s http://rubyforge.org/frs/?group_id=126 | grep -oe /frs/download\.php/[0-9]\\\\+/rubygems-#{rubygem_version.gsub('.','\.')}\.tgz`
-    run "wget #{rubygems_location} -O rubygems-#{rubygem_version}.tgz"
+    rubygem_version ||= "1.4.1"
+    
+    sudo "apt-get install wget"
+    
+    run "wget http://production.cf.rubygems.org/rubygems/rubygems-#{rubygem_version}.tgz"
     run "tar xvzf rubygems-#{rubygem_version}.tgz"
-    sudo_keepalive
     run "cd rubygems-#{rubygem_version} && sudo ruby setup.rb"
     sudo "ln -s /usr/bin/gem1.8 /usr/bin/gem"
     sudo "gem update"
     sudo "gem update --system"
-    run "rm -Rf rubygems-#{rubygem_version}*"
+    run "rm -Rf rubygems-#{rubygem_version}*"  
+  end
+  
+  desc "Install bundler gem"
+  task :install_bundler, :roles => :app do
+    sudo "gem install bundler"
   end
   
   desc "List gems on remote server"
@@ -37,35 +44,5 @@ namespace :gems do
   task :uninstall, :roles => :app do
     name = Capistrano::CLI.ui.ask("Which gem should we uninstall: ")
     sudo "gem uninstall #{name}"
-  end
-
-  desc "Adds the --no-rdoc and --no-ri flags to the .gemrc; you don't need docs on a production server."
-  task :add_nodocs_to_gemrc, :roles => :app do
-    run "echo 'gem: --no-rdoc --no-ri' >> ~/.gemrc"
-  end
-
-  desc "Scp local gem to the remote server and install it"
-  task :deploy_local_gem, :roles => :app do
-    local_gem_path = Capistrano::CLI.ui.ask("Please supply the path to the local gem: ")
-    run "mkdir -p gems"
-    upload(local_gem_path,'~/gems/',:via => :scp, :recursive => false)
-    sudo_keepalive
-    run "cd gems/ && sudo gem install -l #{File.basename(local_gem_path)}"
-  end
-
-  # TODO: Refactor with deploy_local_gem
-  desc "Scp a set of local gems preconfigured in :local_gems_to_deploy to the remote server and install them"
-  task :deploy_local_gems, :roles => :app do
-    _cset(:local_gems_to_deploy) { abort "Please specify the local gems you want to deploy:\n  set :local_gems_to_deploy, ['/path/to/your_local-1.2.gem']" }
-    run "mkdir -p gems"
-    # First upload all gems
-    local_gems_to_deploy.each do |local_gem_path|
-      upload(local_gem_path,'~/gems/',:via => :scp, :recursive => false)
-    end
-    # Then install them
-    local_gems_to_deploy.each do |local_gem_path|
-      sudo_keepalive
-      run "cd gems/ && sudo gem install -l #{File.basename(local_gem_path)}"
-    end
   end
 end

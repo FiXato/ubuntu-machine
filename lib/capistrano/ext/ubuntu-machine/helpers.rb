@@ -33,45 +33,4 @@ def watch_prompt(ch, stream, data, regex_to_watch)
   end
 end
 
-def add_to_file(file,lines)
-  [*lines].each do |line|
-    run 'echo "%s" >> %s' % [line.gsub('"','\"'),file]
-  end
-end
 
-def sudo_add_to_file(file,lines)
-  tmpfile = "#{File.basename(file)}.tmp"
-  sudo "cp #{file} #{tmpfile}"
-  # Temporarily make world read/writable so it can be appended to. 
-  sudo "chmod 0777 #{tmpfile} && sudo chown #{user}:#{user} #{tmpfile}"
-  add_to_file(tmpfile,lines)
-  # Use cp + rm instead mv so the destination file will keep its owner/modes.
-  sudo "cp #{tmpfile} #{file} && rm #{tmpfile}"
-end
-
-# Re-activate sudo session if it has expired.
-def sudo_keepalive
-  sudo "ls > /dev/null"
-end
- 
-# Adds 1 or more commands to the cron tab
-# - commands can be a string or an array
-# - period should be a valid crontab period
-# - use_sudo can be set to true if you want to edit the root crontab.
-def add_to_crontab(commands,period,use_sudo=false)
-  send_cmd = use_sudo ? :sudo : :run
-  tmp_cron="/tmp/cron.tmp"
-  self.send(send_cmd, "rm -f #{tmp_cron} && touch #{tmp_cron}")
-  run "(#{use_sudo ? 'sudo ' : ''}crontab -l || true) > #{tmp_cron}"
-  cron_lines = [*commands].map{|cmd| "#{period} #{cmd}"}
-  add_to_file(tmp_cron, cron_lines)
-  self.send(send_cmd, "crontab #{tmp_cron}")
-  sudo "rm -f #{tmp_cron}"
-end
-
-# Adds 1 or more commands to the cron tab of root
-# - commands can be a string or an array
-# - period should be a valid crontab period
-def sudo_add_to_crontab(commands,period)
-  add_to_crontab(commands, period, true)
-end

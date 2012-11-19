@@ -14,23 +14,15 @@ namespace :ruby do
   
 
   set :ruby_enterprise_url do
-    path = Net::HTTP.get('www.rubyenterpriseedition.com', '/download.html').scan(/<a href=".*\/ruby-enterprise-.*\.tar\.gz"/).first
-    path.gsub!('<a href="','').gsub!('"','')
-    # in case they have relative URLs again:
-    if path[0,1] == '/'
-      path = 'http://www.rubyenterpriseedition.com%s' % path
-    end
-    path
+    Net::HTTP.get('www.rubyenterpriseedition.com', '/download.html').scan(/http:.*\.tar\.gz/).first
   end
 
   set :ruby_enterprise_version do
     "#{ruby_enterprise_url[/(ruby-enterprise.*)(.tar.gz)/, 1]}"
   end
-
-  _cset :ruby_enterprise_path_prefix, '/opt'
   
   set :passenger_version do
-    `gem list passenger$ -r`.gsub(/[\n|\s|passenger|(|)]/,"").split(',').first
+    `gem list passenger$ -r`.gsub(/[\n|\s|passenger|(|)]/,"")
   end
   
 
@@ -39,23 +31,29 @@ namespace :ruby do
     sudo "apt-get install libssl-dev -y"
     sudo "apt-get install libreadline5-dev -y"
     
-    run "test ! -d #{ruby_enterprise_path_prefix}/#{ruby_enterprise_version}"
+    run "test ! -d /opt/#{ruby_enterprise_version}"
     run "wget #{ruby_enterprise_url}"
     run "tar xzvf #{ruby_enterprise_version}.tar.gz"
     run "rm #{ruby_enterprise_version}.tar.gz"
-    sudo "./#{ruby_enterprise_version}/installer --auto #{ruby_enterprise_path_prefix}/#{ruby_enterprise_version}"
+    sudo "./#{ruby_enterprise_version}/installer --auto /opt/#{ruby_enterprise_version}"
     sudo "rm -rf #{ruby_enterprise_version}/"
     
     # create a "permanent" link to the current REE install
-    sudo "ln -s #{ruby_enterprise_path_prefix}/#{ruby_enterprise_version} #{ruby_enterprise_path_prefix}/ruby-enterprise" 
+    sudo "ln -s /opt/#{ruby_enterprise_version} /opt/ruby-enterprise" 
     
     # add REE bin to the path
-    sudo_add_to_file('/etc/environment','PATH="%s/ruby-enterprise/bin:$PATH"' % ruby_enterprise_path_prefix)
+    run "cat /etc/environment > ~/environment.tmp"
+    run 'echo PATH="/opt/ruby-enterprise/bin:$PATH" >> ~/environment.tmp'
+    sudo 'mv ~/environment.tmp /etc/environment'
   end
   
   desc "Install Phusion Passenger"
   task :install_passenger, :roles => :app do
-    # rake 0.8.5 needs latest version of rdoc
+    # sudo apt-get install libcurl4-openssl-dev
+	sudo "apt-get install libcurl4-openssl-dev -y"
+
+
+	# rake 0.8.5 needs latest version of rdoc
     sudo "gem install rdoc"
     
     # because  passenger-install-apache2-module do not find the rake installed by REE
@@ -71,8 +69,8 @@ namespace :ruby do
   
   desc "Upgrade Phusion Passenger"
   task :upgrade_passenger, :roles => :app do
-    sudo "#{ruby_enterprise_path_prefix}/ruby-enterprise/bin/ruby #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/gem install passenger"
-    run "sudo #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/ruby #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/passenger-install-apache2-module --auto"
+    sudo "/opt/#{ruby_enterprise_version}/bin/ruby /opt/#{ruby_enterprise_version}/bin/gem install passenger"
+    run "sudo /opt/#{ruby_enterprise_version}/bin/ruby /opt/#{ruby_enterprise_version}/bin/passenger-install-apache2-module --auto"
 
     put render("passenger.load", binding), "/home/#{user}/passenger.load"
     put render("passenger.conf", binding), "/home/#{user}/passenger.conf"
@@ -83,13 +81,6 @@ namespace :ruby do
     sudo "a2enmod passenger"
     apache.force_reload
   end
-
-  desc 'Make Ruby Enterprise and Rubygems Enterprise default'
-  task :make_enterprise_default, :roles => :app do
-    sudo "ln -fs #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/ruby /usr/bin/ruby"
-    sudo "ln -fs #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/ri /usr/bin/ri"
-    sudo "ln -fs #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/rdoc /usr/bin/rdoc"
-    sudo "ln -fs #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/irb /usr/bin/irb"
-    sudo "ln -fs #{ruby_enterprise_path_prefix}/ruby-enterprise/bin/gem /usr/bin/gem"
-  end
+  
+       
 end

@@ -1,10 +1,7 @@
 namespace :apache do
-  _cset(:sites_path) { "/home/#{user}/websites" }
-
   desc "Install Apache"
   task :install, :roles => :web do
-    sudo "apt-get install apache2 apache2.2-common apache2-mpm-prefork apache2-prefork-dev apache2-utils libexpat1 ssl-cert -y"
-    _cset(:server_name) {Capistrano::CLI.ui.ask("Server name : ")}
+    sudo "apt-get install apache2 apache2.2-common apache2-mpm-prefork apache2-utils libexpat1 ssl-cert -y"
     
     run "cat /etc/apache2/apache2.conf > ~/apache2.conf.tmp"
     put render("apache2", binding), "apache2.append.conf.tmp"
@@ -93,15 +90,12 @@ namespace :apache do
     server_admin    = default_server_admin if server_admin.empty?
     server_name     = Capistrano::CLI.ui.ask("Server name : ")
     server_alias    = Capistrano::CLI.ui.ask("Server alias : ")
-    server_port     = Capistrano::CLI.ui.ask("Server port (80) if blank : ")
-    server_port     = 80 if server_port.empty?
     directory_index = Capistrano::CLI.ui.ask("Directory index (#{default_directory_index}) if blank : ")
     directory_index = default_directory_index if directory_index.empty?
-    document_root   = "#{sites_path}/#{server_name}/public"
 
     # Website skeleton
     %w{backup cap cgi-bin logs private public tmp}.each { |d|
-      run "mkdir -p #{sites_path}/#{server_name}/#{d}"
+      run "mkdir -p /home/#{user}/websites/#{server_name}/#{d}"
     }
     
     put render("vhost", binding), server_name
@@ -117,30 +111,8 @@ namespace :apache do
     if sure=="y"
       sudo "sudo a2dissite #{server_name}"
       sudo "rm /etc/apache2/sites-available/#{server_name}"
-      sudo "rm -Rf #{sites_path}/#{server_name}"
+      sudo "rm -Rf /home/#{user}/websites/#{server_name}"
       reload
     end
-  end
-
-  desc "Fix the mod_deflate configuration and activate it"
-  task :mod_deflate, :roles => :web do
-    put render("deflate.conf", binding), "deflate.conf"
-    sudo "mv deflate.conf /etc/apache2/mods-available/deflate.conf"
-    sudo "a2enmod deflate"
-    force_reload
-  end
-
-  desc "Install mod-xsendfile"
-  task :install_mod_xsendfile, :roles => :web do
-    run "wget http://tn123.ath.cx/mod_xsendfile/mod_xsendfile-0.9.tar.gz -O mod_xsendfile-0.9.tar.gz"
-    run "tar -xzf mod_xsendfile-0.9.tar.gz"
-    sudo "mkdir -p /usr/local/src"
-    sudo "mv mod_xsendfile-0.9* /usr/local/src/"
-    sudo "apxs2 -ci /usr/local/src/mod_xsendfile-0.9/mod_xsendfile.c"
-    put render("xsendfile.conf", binding), "xsendfile.conf.tmp"
-    sudo "mv xsendfile.conf.tmp /etc/apache2/mods-available/xsendfile.conf"
-    put render("xsendfile.load", binding), "xsendfile.load.tmp"
-    sudo "mv xsendfile.load.tmp /etc/apache2/mods-available/xsendfile.load"
-    sudo "a2enmod xsendfile"
-  end
+  end  
 end

@@ -30,6 +30,10 @@ namespace :extras do
 
   desc "Installs extra util imagemagick"
   task :install_imagemagick do
-    sudo "aptitude install -y imagemagick"
+    sudo "apt-get install libmagick9-dev librmagick-ruby1.8 librmagick-ruby libmagickcore-dev msttcorefonts imagemagick libmagickwand-dev"
+    sudo "ldconfig"
+    sudo "gem install rmagick"
   end
 end
+
+#
